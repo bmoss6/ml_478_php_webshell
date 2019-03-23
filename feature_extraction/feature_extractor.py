@@ -1,16 +1,17 @@
-from neopi import Entropy
-from neopi import LanguageIC
-from neopi import LongestWord
-from neopi import SignatureNasty
-from neopi import SignatureSuperNasty
-from neopi import UsesEval
-from neopi import Compression
+from feature_extraction.neopi import Entropy
+from feature_extraction.neopi import LanguageIC
+from feature_extraction.neopi import LongestWord
+from feature_extraction.neopi import SignatureNasty
+from feature_extraction.neopi import SignatureSuperNasty
+from feature_extraction.neopi import UsesEval
+from feature_extraction.neopi import Compression
 import csv
 import os
 import chardet
 import sys
+from joblib import load
 
-def calculate_results(path, filename, label):
+def calculate_results(path, filename, label=None):
     encoding = chardet.detect(open(path+filename, 'rb').read())
     with open(path+filename, 'r', encoding=encoding['encoding']) as f:
         ic = LanguageIC().calculate(f.read(), filename)
@@ -33,7 +34,7 @@ def calculate_results(path, filename, label):
 
 if __name__ == "__main__":
 
-    if sys.argv[1] == '1':
+    if sys.argv[1] == 'feature_extractor':
         with open('../datasets/backdoor_webshells_features.csv', 'w') as csvfile:
             writer = csv.writer(csvfile)
             writer.writerow(["Filename", "File_Size", "Index_of_Coincidence", "Entropy", "Nasty_Sig_Count", "Super_Nasty_Sig_Count", "Eval_Uses", "Compression_Ratio", "Longest_Word_Length", "Label"])
@@ -51,8 +52,16 @@ if __name__ == "__main__":
                     writer.writerow(calculate_results("../data_sources/non_webshells/", f, 0)) 
                     count += 1
                 except Exception as e:
-                    print ("Could not extract: {}".format(f))
+                    print("Could not extract: {}".format(f))
 
-    else:
-        print(calculate_results("./", "shell.php",1 ))
-
+    elif sys.argv[1] == "predict":
+        clf = load("../saved_models/gradient_boosting.joblib")
+        with open("neopi_ml.results", "w") as w:
+            w.write("Filename\t Malicious Probability\n")
+        for f in os.lisdir(sys.argv[2]):
+            results = calculate_results(sys.argv[2], f, None)
+            results = [results[1:-1]]
+            prob = clf.predict_proba(results)
+            print(prob[1])
+            with open("neopi_ml.results", "a") as w:
+                w.write("{}/{}\t{}".format(sys.argv[2], f, round(prob[1]*100,3)))
