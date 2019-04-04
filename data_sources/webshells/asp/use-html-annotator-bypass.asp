@@ -1,4 +1,0 @@
-<%
-<!--"-->
-execute request("LandGrey")
-%>
