@@ -10,8 +10,11 @@ import os
 import chardet
 import sys
 import yara
+import traceback
 from joblib import load
-
+import time
+import random
+import hashlib
 def calculate_results(path, filename, label=None):
     try:
         encoding = chardet.detect(open(path+filename, 'rb').read())
@@ -34,15 +37,21 @@ def calculate_results(path, filename, label=None):
             rules = yara.compile('php.yar')
             matches = rules.match(path+filename)
             yara_match_counts = {}
+            time.sleep(2)
             for x in matches: yara_match_counts["{}".format(x)]=len(x.strings)
             yara_results = create_yara_results(yara_match_counts)
-            res =  [filename, file_size, ic, entropy, nasty_sig_count, super_nasty_count, uses_eval, compression_ratio, longest_word_length]
+            res =  [generate_filename(), file_size, ic, entropy, nasty_sig_count, super_nasty_count, uses_eval, compression_ratio, longest_word_length]
             res.extend(yara_results)
             res.append(label)
             return res 
     except Exception as e :
-        print(e)
+        print(traceback.format_exc())
         return None
+
+def generate_filename():
+    m = hashlib.sha1()
+    m.update(str(random.randint(1,10000000)).encode('utf-8'))
+    return m.hexdigest()[:10]	
 
 def create_yara_results(yara_match_counts):
     yara_rules = ["NonPrintableChars", "ObfuscatedPhp", "PasswordProtection", "HiddenInAFile", "DangerousPhp", "DodgyPhp", "SuspiciousEncoding", "DodgyStrings", "CloudFlareBypass", "Websites"]
@@ -72,6 +81,30 @@ if __name__ == "__main__":
                 print("Starting Extraction on: {}: {}".format(f, count)) 
                 try:
                     writer.writerow(calculate_results("../data_sources/non_webshells/", f, 0)) 
+                    count += 1
+                except Exception as e:
+                    print("Could not extract: {}".format(f))
+
+    if sys.argv[1] == 'feature_extractor_list':
+        with open('../datasets/backdoor_webshells_features_extended_2.csv', 'w') as csvfile:
+            writer = csv.writer(csvfile)
+            writer.writerow(["Filename", "File_Size", "Index_of_Coincidence", "Entropy", "Nasty_Sig_Count", "Super_Nasty_Sig_Count", "Eval_Uses", "Compression_Ratio", "Longest_Word_Length", "NonPrintableChars", "ObfuscatedPHP", "PasswordProtection", "HiddenInAFile", "DangerousPHP", "DodgyPHP", "SuspiciousEncoding", "DodgyStrings", "CloudflareBypass", "Websites", "Label"])
+            count = 0
+            webshells = open("all_shells.txt",'r') 
+            for f in webshells.readlines():
+                f = f.strip('\n')
+                print("Starting Extraction on: {}: {}".format(f, count))
+                try: 
+                    writer.writerow(calculate_results("", f, 1)) 
+                    count += 1
+                except Exception as e:
+                    print ("Could not extract: {}".format(f))
+            non_webshells = open("all_non_webshells.txt",'r') 
+            for f in non_webshells.readlines():
+                f = f.strip('\n')
+                print("Starting Extraction on: {}: {}".format(f, count)) 
+                try:
+                    writer.writerow(calculate_results("", f, 0)) 
                     count += 1
                 except Exception as e:
                     print("Could not extract: {}".format(f))

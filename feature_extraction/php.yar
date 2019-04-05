@@ -1,27 +1,4 @@
 import "hash"
-
-/*
-    Detect:
-        - phpencode.org
-        - http://www.pipsomania.com/best_php_obfuscator.do
-        - http://atomiku.com/online-php-code-obfuscator/
-        - http://www.webtoolsvn.com/en-decode/
-        - http://obfuscator.uk/example/
-        - http://w3webtools.com/encode-php-online/
-        - http://www.joeswebtools.com/security/php-obfuscator/
-        - https://github.com/epinna/weevely3
-        - http://cipherdesign.co.uk/service/php-obfuscator
-        - http://sysadmin.cyklodev.com/online-php-obfuscator/
-        - http://mohssen.org/SpinObf.php
-        - https://code.google.com/p/carbylamine/
-        - https://github.com/tennc/webshell
-
-        - https://github.com/wireghoul/htshells
-
-    Thanks to:
-        - https://stackoverflow.com/questions/3115559/exploitable-php-functions
-*/
-
 global private rule IsPhp
 {
     strings:
