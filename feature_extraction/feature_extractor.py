@@ -125,7 +125,7 @@ if __name__ == "__main__":
 
     elif sys.argv[1] == "predict_list":
         print("predict list!")
-        clf = load(sys.arv[4])
+        clf = load(sys.argv[4])
         with open(sys.argv[3], "w") as w:
             w.write("Filename\tWebshell\tProbability\n")
         prefix = ""
@@ -145,7 +145,7 @@ if __name__ == "__main__":
                 else:
                     pred = 'No'
                 print("{}:{} ({})".format(fi.strip('\n'),pred, prob[0][1]))
-                if prob[0][1] >float(sys.argv[4]):
+                if prob[0][1] >float(sys.argv[5]):
                     with open(sys.argv[3], "a") as w:
                         w.write("{}\t{}\t{}\n".format(fi, pred, round((prob[0][1])*100,3)))
         f.close()
