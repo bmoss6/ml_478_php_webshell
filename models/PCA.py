@@ -3,7 +3,7 @@ from sklearn.decomposition import PCA
 import pandas as pd
 
 dataset = pd.read_csv('../datasets/backdoor_webshells_features_full.csv')
-dataset = dataset.drop(['Filename'], axis=1)
+# dataset = dataset.drop(['Filename'], axis=1)
 dataset = dataset.drop(['Super_Nasty_Sig_Count'], axis=1)
 dataset = dataset.drop(['CloudflareBypass'], axis=1)
 dataset = dataset.drop(['SuspiciousEncoding'], axis=1)
@@ -19,7 +19,7 @@ pca = PCA(0.95)
 transformed_feat = pca.fit_transform(dataset_np)
 # pritn(dataset)
 
-transformed_dataset = np.hstack((transformed_feat, dataset_np[:,-1].reshape(dataset_np.shape[0],1)))
+transformed_dataset = np.hstack((transformed_feat, dataset_np[:,-1].reshape(dataset_np.shape[0],1).astype(int)))
 
 print(transformed_dataset[0:3])
 print(pca.explained_variance_ratio_) 
